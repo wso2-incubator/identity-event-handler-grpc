@@ -27,14 +27,16 @@ public class GrpcBasedHandlerProperties {
     private int priority;
     private String host;
     private int port;
+    private boolean hasCert;
     private String certPath;
 
-    public GrpcBasedHandlerProperties(String handlerName, String priority, String host, String port, String certPath) {
+    public GrpcBasedHandlerProperties(String handlerName, String priority, String host, String port, String hasCert, String certPath) {
 
         this.handlerName = handlerName;
         this.priority = Integer.parseInt(priority);
         this.host = host;
         this.port = Integer.parseInt(port);
+        this.hasCert = Boolean.parseBoolean(hasCert);
         this.certPath = certPath;
 
     }
@@ -57,6 +59,11 @@ public class GrpcBasedHandlerProperties {
     public int getPort() {
 
         return this.port;
+    }
+
+    public boolean hasCert(){
+
+        return hasCert;
     }
 
     public String getCertPath() {

@@ -86,7 +86,7 @@ public class GrpcEventHandler extends AbstractEventHandler {
     /**
      * init method initialize the handler's configurations.
      */
-    public void init(String handlerName, int priority, String host, int port, String certPath) {
+    public void init(String handlerName, int priority, String host, int port, boolean hasCert, String certPath) {
 
         this.handlerName = handlerName;
         this.priority = priority;
@@ -94,16 +94,26 @@ public class GrpcEventHandler extends AbstractEventHandler {
         this.grpcServerPort = port;
         this.certPath = certPath;
 
-        // Obtains the certificate file.
-        File clientCACertFile = new File(certPath);
+        // Check the availability of the certificate file.
+        if (hasCert) {
 
-        // Create the channel for gRPC server with server authentication SSL/TLS.
-        try {
-            this.channel = NettyChannelBuilder.forAddress(grpcServerHost, grpcServerPort)
-                    .sslContext(GrpcSslContexts.forClient().trustManager(clientCACertFile).build())
-                    .build();
-        } catch (SSLException e) {
-            log.error("Error occurred while verifying the SSL certificate : ", e);
+            // Obtains the certificate file.
+            File clientCACertFile = new File(certPath);
+
+            // Create the channel for gRPC server with server authentication SSL/TLS.
+            try {
+                this.channel = NettyChannelBuilder.forAddress(grpcServerHost, grpcServerPort)
+                        .sslContext(GrpcSslContexts.forClient().trustManager(clientCACertFile).build())
+                        .build();
+            } catch (SSLException e) {
+                log.error("Error occurred while verifying the SSL certificate : ", e);
+            }
+        }
+        else {
+
+            // Create the channel for gRPC server without authentication.
+            this.channel = NettyChannelBuilder.forAddress(grpcServerHost, grpcServerPort).build();
+
         }
 
         // Create the gRPC client stub.

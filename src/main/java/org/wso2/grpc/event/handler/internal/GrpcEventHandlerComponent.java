@@ -78,6 +78,7 @@ public class GrpcEventHandlerComponent {
                     .getProperty(handlerName + ".priority");
             String host = handlerConfiguration.getModuleProperties().getProperty(handlerName + ".host");
             String port = handlerConfiguration.getModuleProperties().getProperty(handlerName + ".port");
+            String hasCert = handlerConfiguration.getModuleProperties().getProperty(handlerName + ".hasCert");
             String certPath = handlerConfiguration.getModuleProperties().getProperty(handlerName + ".certPath");
 
             // Add gRPC based handler properties to handlerConfigs.
@@ -85,6 +86,7 @@ public class GrpcEventHandlerComponent {
                     priority,
                     host,
                     port,
+                    hasCert,
                     certPath);
             this.handlerConfigs.add(grpcBasedHandlerProperties);
         }
@@ -105,6 +107,7 @@ public class GrpcEventHandlerComponent {
                     grpcBasedHandlerProperties.getPriority(),
                     grpcBasedHandlerProperties.getHost(),
                     grpcBasedHandlerProperties.getPort(),
+                    grpcBasedHandlerProperties.hasCert(),
                     grpcBasedHandlerProperties.getCertPath());
 
             // Register the gRPC based event handlers as an OSGI service.
