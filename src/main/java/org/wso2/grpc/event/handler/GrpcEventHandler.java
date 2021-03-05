@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.grpc.event.handler.grpc.OutputStreamObserver;
 import org.wso2.grpc.event.handler.grpc.Service;
 import org.wso2.grpc.event.handler.grpc.ServiceGrpc;
 
@@ -50,7 +51,7 @@ public class GrpcEventHandler extends AbstractEventHandler {
     private int priority;
     private String certPath;
     private ManagedChannel channel;
-    private ServiceGrpc.serviceBlockingStub clientStub;
+    private ServiceGrpc.serviceStub clientStub;
 
     @Override
     public String getName() {
@@ -83,8 +84,8 @@ public class GrpcEventHandler extends AbstractEventHandler {
 
         // Obtain log message from remote gRPC server.
         try {
-            Service.Log remoteLog = clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1);
-            log.debug(remoteLog.getLog());
+            this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1, new OutputStreamObserver());
+//            log.debug(remoteLog.getLog());
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == Status.Code.DEADLINE_EXCEEDED) {
                 log.error("gRPC connection deadline exceeded.", e);
@@ -136,6 +137,6 @@ public class GrpcEventHandler extends AbstractEventHandler {
         }
 
         // Create the gRPC client stub.
-        this.clientStub = ServiceGrpc.newBlockingStub(channel);
+        this.clientStub = ServiceGrpc.newStub(channel);
     }
 }
