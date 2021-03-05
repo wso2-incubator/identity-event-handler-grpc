@@ -19,6 +19,8 @@
 package org.wso2.grpc.event.handler;
 
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import org.apache.commons.logging.Log;
@@ -33,6 +35,7 @@ import org.wso2.grpc.event.handler.grpc.ServiceGrpc;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 
 /**
@@ -79,8 +82,25 @@ public class GrpcEventHandler extends AbstractEventHandler {
         Service.Event event1 = Service.Event.newBuilder().setEvent(eventName).putAllEventProperties(grpcMap).build();
 
         // Obtain log message from remote gRPC server.
-        Service.Log remoteLog = clientStub.handleEvent(event1);
-        log.debug(remoteLog.getLog());
+        try {
+            Service.Log remoteLog = clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1);
+            log.debug(remoteLog.getLog());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.DEADLINE_EXCEEDED) {
+                log.error("gRPC connection deadline exceeded.", e);
+            }
+            else if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
+                log.error("gRPC service is unavailable.", e);
+            }
+            else if (e.getStatus().getCode() == Status.Code.UNIMPLEMENTED) {
+                log.error("Operation not implemented in the gRPC service.", e);
+            }
+            else if (e.getStatus().getCode() == Status.Code.UNKNOWN) {
+                log.error("gRPC server threw unknown exception.", e);
+            } else {
+                log.error("gRPC service failure. " + e.getStatus().toString());
+            }
+        }
     }
 
     /**
@@ -108,8 +128,7 @@ public class GrpcEventHandler extends AbstractEventHandler {
             } catch (SSLException e) {
                 log.error("Error occurred while verifying the SSL certificate : ", e);
             }
-        }
-        else {
+        } else {
 
             // Create the channel for gRPC server without authentication.
             this.channel = NettyChannelBuilder.forAddress(grpcServerHost, grpcServerPort).build();
