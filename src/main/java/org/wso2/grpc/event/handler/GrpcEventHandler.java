@@ -19,8 +19,6 @@
 package org.wso2.grpc.event.handler;
 
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import org.apache.commons.logging.Log;
@@ -83,25 +81,9 @@ public class GrpcEventHandler extends AbstractEventHandler {
         Service.Event event1 = Service.Event.newBuilder().setEvent(eventName).putAllEventProperties(grpcMap).build();
 
         // Obtain log message from remote gRPC server.
-        try {
-            this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1, new OutputStreamObserver());
-//            log.debug(remoteLog.getLog());
-        } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode() == Status.Code.DEADLINE_EXCEEDED) {
-                log.error("gRPC connection deadline exceeded.", e);
-            }
-            else if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
-                log.error("gRPC service is unavailable.", e);
-            }
-            else if (e.getStatus().getCode() == Status.Code.UNIMPLEMENTED) {
-                log.error("Operation not implemented in the gRPC service.", e);
-            }
-            else if (e.getStatus().getCode() == Status.Code.UNKNOWN) {
-                log.error("gRPC server threw unknown exception.", e);
-            } else {
-                log.error("gRPC service failure. " + e.getStatus().toString());
-            }
-        }
+
+        this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1, new OutputStreamObserver());
+
     }
 
     /**
