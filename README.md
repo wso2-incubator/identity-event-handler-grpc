@@ -18,7 +18,7 @@ You can get a clear knowledge on configuring of the gRPC Based Identity Event Ha
 Throughout the instructions `{wso2is-home}` is referred as the root directory of the WSO2 Identity Server.
 
 ### Implementing gRPC Server
-Use [service.proto](https://github.com/NuwangaHerath/gRPC-Custom-Event-Handler/blob/main/src/main/resources/service.proto) to implement the gRPC server.
+Use [service.proto](https://github.com/wso2-incubator/identity-event-handler-grpc/blob/main/src/main/resources/service.proto) to implement the gRPC server.
 
 You can download the `service.proto` file [here](https://github.com/NuwangaHerath/gRPC-Custom-Event-Handler/releases/tag/v1.0.0).
 
@@ -139,9 +139,6 @@ INFO {org.wso2.grpc.event.handler.GrpcEventHandler} - testing POST_ADD_USER even
 ## Build from the source
 
 1. Download/Clone the project into your local machine.
-```sh
-$ git clone https://github.com/NuwangaHerath/gRPC-Based-Event-Handler.git
-```
 2. Open a terminal from the project directory of your machine.
 2. Build the project using maven by executing the following command in the terminal.
 ```sh
