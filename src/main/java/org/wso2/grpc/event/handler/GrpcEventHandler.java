@@ -27,12 +27,14 @@ import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.grpc.event.handler.grpc.OutputStreamObserver;
 import org.wso2.grpc.event.handler.grpc.Service;
 import org.wso2.grpc.event.handler.grpc.ServiceGrpc;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 
 /**
@@ -47,7 +49,7 @@ public class GrpcEventHandler extends AbstractEventHandler {
     private int priority;
     private String certPath;
     private ManagedChannel channel;
-    private ServiceGrpc.serviceBlockingStub clientStub;
+    private ServiceGrpc.serviceStub clientStub;
 
     @Override
     public String getName() {
@@ -79,8 +81,9 @@ public class GrpcEventHandler extends AbstractEventHandler {
         Service.Event event1 = Service.Event.newBuilder().setEvent(eventName).putAllEventProperties(grpcMap).build();
 
         // Obtain log message from remote gRPC server.
-        Service.Log remoteLog = clientStub.handleEvent(event1);
-        log.debug(remoteLog.getLog());
+
+        this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1, new OutputStreamObserver());
+
     }
 
     /**
@@ -108,8 +111,7 @@ public class GrpcEventHandler extends AbstractEventHandler {
             } catch (SSLException e) {
                 log.error("Error occurred while verifying the SSL certificate : ", e);
             }
-        }
-        else {
+        } else {
 
             // Create the channel for gRPC server without authentication.
             this.channel = NettyChannelBuilder.forAddress(grpcServerHost, grpcServerPort).build();
@@ -117,6 +119,6 @@ public class GrpcEventHandler extends AbstractEventHandler {
         }
 
         // Create the gRPC client stub.
-        this.clientStub = ServiceGrpc.newBlockingStub(channel);
+        this.clientStub = ServiceGrpc.newStub(channel);
     }
 }
