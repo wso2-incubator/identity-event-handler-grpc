@@ -38,7 +38,44 @@ You can find sample gRPC servers from the below table.
 ### Configuring Identity Server
 1. Download the `org.wso2.grpc.event.handler-1.0.0-SNAPSHOT.jar` from [here](https://github.com/NuwangaHerath/gRPC-Custom-Event-Handler/releases/tag/v1.0.0) or [build from the source](#build-from-the-source).
 2. Copy the `org.wso2.grpc.event.handler-1.0.0-SNAPSHOT.jar` file into `{wso2is-home}/repository/component/dropins` directory.
-3. Add following custom event configuration to `{wso2is-home}/repository/conf/deployment.toml` file to configure `identity-event.properties` file of the identity server.
+3. Replace the config template pattern in `{wso2is-home}/repository/resources/conf/templates/repository/conf/identity/identity-event-properties.j2` with the following code.
+```j2
+threadPool.size={{identity_mgt.events.thread_pool_size}}
+
+# Example Configuration Pattern for an event.
+#      module.name.1=event1
+#      event1.subscription.1=subscription1
+#      event1.enable=true
+
+# count array is used to identify the number of events. This number is used to configure custom events.
+{% set count = [] %}
+{% for event_name, event_value in identity_mgt.events.schemes.items() %}
+module.name.{{event_value.module_index}}={{event_name}}
+{% for subscription in event_value.subscriptions%}
+{{event_name}}.subscription.{{loop.index}}={{subscription}}
+{% endfor %}
+{% for property_name,property_value in event_value.properties.items()%}
+{{event_name}}.{{property_name}}={{property_value}}
+{% endfor %}
+{% if count.append(1) %}{% endif %}
+{% endfor %}
+
+# Custom event configuration.
+
+{% set custom_count = count|length %}
+{% for custom_event in event_handler %}
+{% set index = custom_count + loop.index %}
+module.name.{{index}}={{custom_event.name}}
+{% for subscription in custom_event.subscriptions.toList()%}
+{{custom_event.name}}.subscription.{{loop.index}}={{subscription}}
+{% endfor %}
+{% for property_name,property_value in custom_event.properties.items()%}
+{{custom_event.name}}.{{property_name}}={{property_value}}
+{% endfor %}
+{% if count.append(1) %}{% endif %}
+{% endfor %}
+```
+4. Add following custom event configuration to `{wso2is-home}/repository/conf/deployment.toml` file to configure `identity-event.properties` file of the identity server.
 - Add the names of gRPC Based Identity Event Handlers as handlers in `grpc` configurations.
 
 ```toml
