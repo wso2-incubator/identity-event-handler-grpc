@@ -43,11 +43,8 @@ import javax.net.ssl.SSLException;
 public class GrpcEventHandler extends AbstractEventHandler {
 
     private static Log log = LogFactory.getLog(GrpcEventHandler.class);
-    private String grpcServerHost;
-    private int grpcServerPort;
     private String handlerName;
     private int priority;
-    private String certPath;
     private ManagedChannel channel;
     private ServiceGrpc.serviceStub clientStub;
 
@@ -78,24 +75,23 @@ public class GrpcEventHandler extends AbstractEventHandler {
         }
 
         // Define the gRPC event message
-        Service.Event event1 = Service.Event.newBuilder().setEvent(eventName).putAllEventProperties(grpcMap).build();
+        Service.Event grpcEvent = Service.Event.newBuilder().setEvent(eventName).putAllEventProperties(grpcMap).build();
 
         // Obtain log message from remote gRPC server.
 
-        this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(event1, new OutputStreamObserver());
+        this.clientStub.withDeadlineAfter(5000, TimeUnit.MILLISECONDS).handleEvent(grpcEvent,
+                new OutputStreamObserver());
 
     }
 
     /**
      * init method initialize the handler's configurations.
      */
-    public void init(String handlerName, int priority, String host, int port, boolean hasCert, String certPath) {
+    public void init(String handlerName, int priority, String grpcServerHost, int grpcServerPort, boolean hasCert
+            , String certPath) {
 
         this.handlerName = handlerName;
         this.priority = priority;
-        this.grpcServerHost = host;
-        this.grpcServerPort = port;
-        this.certPath = certPath;
 
         // Check the availability of the certificate file.
         if (hasCert) {
