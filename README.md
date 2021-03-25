@@ -80,6 +80,7 @@ module.name.{{index}}={{custom_event.name}}
 - Add the names of gRPC Based Identity Event Handlers as handlers in `grpc` configurations.
 
 ```toml
+[[grpc]]
 handlers=["<handler name>"]
 ```
 - Replace the values of `host` and `port` from the respective values you copied from the [previous step](#implementing-grpc-server).
