@@ -34,8 +34,9 @@ public class OutputStreamObserver implements StreamObserver<Service.Log> {
     @Override
     public void onNext(Service.Log output) {
 
-        log.info(output.getLog());
-
+        if (log.isDebugEnabled()) {
+            log.debug(output.getLog());
+        }
     }
 
     @Override
